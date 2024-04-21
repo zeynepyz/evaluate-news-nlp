@@ -9,7 +9,7 @@ module.exports = {
     module: {
         rules: [
             {
-                test: '/\.js$/',
+                test: /\.js$/,
                 exclude: /node_modules/,
                 loader: "babel-loader"
             },
@@ -25,5 +25,9 @@ module.exports = {
             filename: "./index.html",
         }),
         new WorkboxPlugin.GenerateSW()
-    ]
+    ],
+    devServer: {
+        port: 3000,
+        allowedHosts: 'all'
+    }
 }

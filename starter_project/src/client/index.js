@@ -7,5 +7,3 @@ import { handleSubmit } from './js/formHandler'
 // console.log("CHANGE!!");
 
 // sass files
-
-
