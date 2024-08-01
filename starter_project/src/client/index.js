@@ -1,6 +1,9 @@
 // js files
-import { handleSubmit } from './js/formHandler'
-import { checkForName } from './js/nameChecker'
+import { handleSubmit, updateView, callAPI, createFormData, fetchApiKey } from './js/formHandler'
+import { urlChecking } from './js/urlChecker'
+
+
+export { handleSubmit, updateView, callAPI, createFormData, fetchApiKey, urlChecking };
 
 // alert("I EXIST")
 // console.log("CHANGE!!");
