@@ -1,30 +1,78 @@
 // Replace checkForName with a function that checks the URL
-import { checkForName } from './nameChecker'
-
-// If working on Udacity workspace, update this with the Server API URL e.g. `https://wfkdhyvtzx.prod.udacity-student-workspaces.com/api`
-// const serverURL = 'https://wfkdhyvtzx.prod.udacity-student-workspaces.com/api'
-const serverURL = 'https://localhost:8000/api'
-
+import { urlChecking } from './urlChecker'
+const serverURL = 'https://localhost:8000/api';
 const form = document.getElementById('urlForm');
-form.addEventListener('submit', handleSubmit);
 
-function handleSubmit(event) {
+document.addEventListener('DOMContentLoaded', function() {
+    form.addEventListener('submit', handleSubmit);
+});
+
+async function handleSubmit(event) {
     event.preventDefault();
 
-    // Get the URL from the input field
     const formText = document.getElementById('name').value;
 
-    // This is an example code that checks the submitted name. You may remove it from your code
-    checkForName(formText);
-    
-    // Check if the URL is valid
- 
-        // If the URL is valid, send it to the server using the serverURL constant above
-      
+    if (urlChecking(formText)) {
+        try {
+            const apiKey = process.env.API_KEY;
+            const response = await callAPI({
+                method: 'POST',
+                body: createFormData(apiKey, formText),
+                redirect: 'follow'
+            });
+            if (response.status.code !== '0') {
+                throw new Error(`API Error: ${response.status.msg}`);
+            }
+            updateView(response);
+        } catch (error) {
+            console.error(error);
+        }
+    } else {
+        alert('Invalid URL');
+    }
 }
 
-// Function to send data to the server
+function createFormData(apiKey, url) {
+    const formdata = new FormData();
+    formdata.append("key", apiKey);
+    formdata.append("url", url);
+    formdata.append("lang", "en");
+    return formdata;
+}
 
-// Export the handleSubmit function
-export { handleSubmit };
+function updateView(data) {
+    const polarityTerms = data.polarity_terms.map(term => `<li>${term.text} (${term.score_tag})</li>`).join('');
+    const div = document.getElementById('results');
+    div.innerHTML = `
+        <p>The sentiments detected in the text are in ${data.agreement}.</p>
+        <p>The text is ${data.subjectivity}.</p>
+        <p>${data.sentence_list[0].text}</p>
+        <p>Polarity Terms:</p>
+        <ul>${polarityTerms}</ul>
+    `;
+}
 
+async function callAPI(options) {
+    try {
+        const response = await fetch('https://api.meaningcloud.com/sentiment-2.1', options);
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(`HTTP Error: ${response.status}`);
+        }
+
+        return data;
+    } catch (error) {
+        handleError(error);
+    }
+}
+
+function handleError(error) {
+    console.error('An error occurred:', error);
+    const div = document.getElementById('results');
+    div.innerHTML = `
+        <p>An error occurred: ${error.message}</p>
+    `;
+}
+
+export { handleSubmit, updateView, callAPI, createFormData };
